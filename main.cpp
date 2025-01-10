@@ -63,6 +63,14 @@ static LPSTR GetLastErrorStr() {
 	return messageBuffer;
 }
 
+static char* GetFileName(char* path) {
+	char* filename = strrchr(path, '\\');
+	if (!filename) {
+		return path;
+	}
+	return filename + 1;
+}
+
 int main(int argc, char* argv[]) {
 	// check we have the right number of args
 	if (argc != 3) {
@@ -70,8 +78,8 @@ int main(int argc, char* argv[]) {
 		printf("Usage: inject process dll\n");
 		return EXIT_FAILURE;
 	}
-	const char* process = argv[1];
-	const char* dll = argv[2];
+	char* process = argv[1];
+	char* dll = argv[2];
 	char dllPath[MAX_PATH];
 	// make sure we have full path to dll
 	if (!GetFullPathName(dll, MAX_PATH, dllPath, nullptr)) {
@@ -129,6 +137,6 @@ int main(int argc, char* argv[]) {
 	if (hProc) {
 		CloseHandle(hProc);
 	}
-	printf("dll injected!\n");
+	printf("%s injected into %s!\n", GetFileName(dll), process);
 	return EXIT_SUCCESS;
 }
