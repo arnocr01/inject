@@ -22,43 +22,43 @@ static DWORD GetProcId(const char* procName) {
 	return procId;
 }
 
-static bool EnableSeDebugPrivilege(bool enable) {
-	HANDLE hToken = nullptr;
+static BOOL EnableSeDebugPrivilege(BOOL enable) {
+	HANDLE hToken = NULL;
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
-		return false;
+		return FALSE;
 	}
 	TOKEN_PRIVILEGES TokenPrivileges = { 0 };
 	if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &TokenPrivileges.Privileges[0].Luid)) {
 		CloseHandle(hToken);
-		return false;
+		return FALSE;
 	}
 	TokenPrivileges.PrivilegeCount = 1;
 	if (enable) {
 		TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 	}
 	else {
-		TokenPrivileges.Privileges[0].Attributes = NULL;
+		TokenPrivileges.Privileges[0].Attributes = 0;
 	}
-	if (!AdjustTokenPrivileges(hToken, FALSE, &TokenPrivileges, sizeof(TOKEN_PRIVILEGES), nullptr, 0)) {
+	if (!AdjustTokenPrivileges(hToken, FALSE, &TokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, 0)) {
 		CloseHandle(hToken);
-		return false;
+		return FALSE;
 	}
 	CloseHandle(hToken);
-	return true;
+	return TRUE;
 }
 
 static LPSTR GetLastErrorStr() {
-	LPSTR messageBuffer = nullptr;
+	LPSTR messageBuffer = NULL;
 	size_t size = FormatMessageA(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr,
+		NULL,
 		GetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPSTR)&messageBuffer,
 		0,
-		nullptr
+		NULL
 	);
 	return messageBuffer;
 }
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 	char* dll = argv[2];
 	char dllPath[MAX_PATH];
 	// make sure we have full path to dll
-	if (!GetFullPathName(dll, MAX_PATH, dllPath, nullptr)) {
+	if (!GetFullPathName(dll, MAX_PATH, dllPath, NULL)) {
 		printf("GetFullPathName Error: '%s'.", GetLastErrorStr());
 		return EXIT_FAILURE;
 	}
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 	// get debug privilege
-	if (!EnableSeDebugPrivilege(true)) {
+	if (!EnableSeDebugPrivilege(TRUE)) {
 		printf("Enable SeDebugPrivilege failed: %s", GetLastErrorStr());
 		return EXIT_FAILURE;
 	}
